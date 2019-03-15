@@ -1,0 +1,17 @@
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+       http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
+
+    <!-- 服务名 -->
+    <dubbo:application name="dubbo-provider"/>
+    <!-- use multicast registry center to export service -->
+    <dubbo:registry address="zookeeper://192.168.5.141:2181"/>
+    <!-- use dubbo protocol to export service on port 20880 -->
+    <dubbo:protocol name="dubbo" port="20811"/>
+    <!-- 使用注解方式暴露接口 -->
+    <dubbo:annotation package="com.tigar.dubbo.provider1"/>
+
+
+</beans>

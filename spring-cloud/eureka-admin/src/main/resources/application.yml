@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: spring-boot-admin
+#  security:
+#    user:
+#      name: "user"
+#      password: "password"
+server:
+  port: 8788
+
+# tag::configuration-eureka[]
+eureka:   #<1>
+  instance:
+    leaseRenewalIntervalInSeconds: 10
+    health-check-url-path: /actuator/health
+  client:
+    registryFetchIntervalSeconds: 5
+    serviceUrl:
+      defaultZone: http://localhost:9021/eureka/,http://localhost:9022/eureka/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"  #<2>
+  endpoint:
+    health:
+      show-details: ALWAYS
+# end::configuration-eureka[]

@@ -1,0 +1,51 @@
+server:
+  port: 48117
+spring:
+  profiles:
+    active: dev
+  datasource:
+    tigar:
+      driverClassName: com.mysql.jdbc.Driver
+      url: jdbc:mysql://192.168.5.141:3306/tigar?useSSL=false&rewriteBatchedStatements=true
+      username: root
+      password: 123456
+    lily:
+      driverClassName: com.mysql.jdbc.Driver
+      url: jdbc:mysql://192.168.5.141:3307/tigar?useSSL=false&rewriteBatchedStatements=true
+      username: root
+      password: 123456
+  data:
+    solr:
+      host: http://192.168.5.141:8983/solr
+    elasticsearch:
+      cluster-name: elasticsearch
+      cluster-nodes: 192.168.5.141:9300
+  activemq:
+    broker-url: tcp://192.168.5.141:61616
+    user: admin
+    password: admin
+##    连接池 可以不开启
+#    pool:
+#      enabled: true
+#      max-connections: 10
+  rabbitmq:
+      port: 5672
+      host: 192.168.5.141
+      virtual-host: /
+      username: root
+      password: root
+      publisher-confirms: true
+  kafka:
+    producer:
+      bootstrap-servers: 192.168.5.141:9093
+    consumer:
+      bootstrap-servers: 192.168.5.141:9093
+
+rocketmq:
+  name-server: 192.168.5.141:9876
+  producer.group: my-group
+
+## 日志级别
+#logging:
+#  level: info
+#  path: ./logs/

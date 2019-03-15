@@ -1,0 +1,337 @@
+version: '2.2'
+services:
+    es-mas1:
+        image: elasticsearch:5.6.4
+        restart: unless-stopped
+        volumes:
+           - ./esmas1:/usr/share/elasticsearch/data
+           - ./esmas1.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+        privileged: true
+        environment:
+           - ES_CLUSTERNAME=elasticsearch
+           - ES_JAVA_OPTS=-Xms256m -Xmx256m
+        command: elasticsearch
+        ports:
+           - "9200:9200"
+           - "9300:9300"
+    es-mas2:
+        image: elasticsearch:5.6.4
+        restart: unless-stopped
+        volumes:
+           - ./esmas2:/usr/share/elasticsearch/data
+           - ./esmas2.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+        privileged: true
+        environment:
+           - ES_CLUSTERNAME=elasticsearch
+           - ES_JAVA_OPTS=-Xms256m -Xmx256m
+        command: elasticsearch
+        ports:
+           - "9202:9200"
+           - "9302:9300"
+        links:
+           - es-mas1:mas1
+    es-mas3:
+        image: elasticsearch:5.6.4
+        restart: unless-stopped
+        volumes:
+           - ./esmas3:/usr/share/elasticsearch/data
+           - ./esmas3.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+        privileged: true
+        environment:
+           - ES_CLUSTERNAME=elasticsearch
+           - ES_JAVA_OPTS=-Xms256m -Xmx256m
+        command: elasticsearch
+        ports:
+           - "9203:9200"
+           - "9303:9300"
+        links:
+           - es-mas1:mas1
+           - es-mas2:mas2
+    es-data1:
+        image: elasticsearch:5.6.4
+        restart: unless-stopped
+        volumes:
+           - ./esdata1:/usr/share/elasticsearch/data
+           - ./esdata1.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+        privileged: true
+        environment:
+           - ES_CLUSTERNAME=elasticsearch
+           - ES_JAVA_OPTS=-Xms256m -Xmx256m
+        command: elasticsearch
+        links:
+           - es-mas1:mas1
+           - es-mas2:mas2
+           - es-mas3:mas3
+    es-data2:
+        image: elasticsearch:5.6.4
+        restart: unless-stopped
+        volumes:
+           - ./esdata2:/usr/share/elasticsearch/data
+           - ./esdata2.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+        privileged: true
+        environment:
+           - ES_CLUSTERNAME=elasticsearch
+           - ES_JAVA_OPTS=-Xms256m -Xmx256m
+        command: elasticsearch
+        links:
+           - es-mas1:mas1
+           - es-mas2:mas2
+           - es-mas3:mas3
+    elasticsearch-head:
+        image: mobz/elasticsearch-head:5
+        restart: unless-stopped
+        ports:
+           - "9100:9100"
+    kibana:
+        image: kibana:5.6.14
+        restart: unless-stopped
+        environment:
+           - ELASTICSEARCH_URL=http://mas1:9200
+        ports:
+           - "5601:5601"
+        links:
+           - es-mas1:mas1
+        mem_limit: 256m
+    mysql1:
+        image: mysql:5.7
+        restart: unless-stopped
+        environment:
+            MYSQL_ROOT_PASSWORD: 123456
+        ports:
+           - "3306:3306"
+        mem_limit: 256m
+    mysql2:
+        image: mysql:5.7
+        restart: unless-stopped
+        environment:
+            MYSQL_ROOT_PASSWORD: 123456
+        ports:
+           - 3307:3306
+        mem_limit: 256m
+    mongo:
+        image: mongo
+        restart: unless-stopped
+        privileged: true
+        volumes:
+           - ./mongo:/data/db
+        ports:
+           - 27017:27017
+        mem_limit: 256m
+    redis1:
+        image: redis
+        restart: unless-stopped
+        privileged: true
+        volumes:
+           - ./redis1:/data
+        ports:
+           - "6379:6379"
+        mem_limit: 256m
+    redis2:
+        image: redis
+        restart: unless-stopped
+        privileged: true
+        volumes:
+           - ./redis2:/data
+        ports:
+           - 6380:6379
+        mem_limit: 256m
+    solr:
+        image: solr
+        restart: unless-stopped
+        ports:
+           - "8983:8983"
+    activemq:
+        image: webcenter/activemq
+        restart: unless-stopped
+        ports:
+           - 61616:61616
+           # web管理界面
+           - 8161:8161
+        mem_limit: 128m
+    zoo1:
+        image: zookeeper
+        restart: unless-stopped
+        hostname: zoo1
+        ports:
+           - "2182:2181"
+        environment:
+            ZOO_MY_ID: 1
+            ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
+    zoo2:
+        image: zookeeper
+        restart: unless-stopped
+        hostname: zoo2
+        ports:
+           - "2183:2181"
+        environment:
+            ZOO_MY_ID: 2
+            ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
+    zoo3:
+        image: zookeeper
+        restart: unless-stopped
+        hostname: zoo3
+        ports:
+           - "2184:2181"
+        environment:
+            ZOO_MY_ID: 3
+            ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
+    kafka1:
+        image: wurstmeister/kafka:2.12-2.0.1
+        restart: unless-stopped
+        hostname: kafka1
+        environment:
+            KAFKA_BROKER_ID: 1
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.5.141:9093
+            KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+            KAFKA_ZOOKEEPER_CONNECT: zoo1:2181,zoo2:2181,zoo3:2181
+        ports:
+           - "9093:9092"
+        links:
+           - zoo1
+           - zoo2
+           - zoo3
+    kafka2:
+        image: wurstmeister/kafka:2.12-2.0.1
+        restart: unless-stopped
+        hostname: kafka2
+        environment:
+            KAFKA_BROKER_ID: 2
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.5.141:9094
+            KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+            KAFKA_ZOOKEEPER_CONNECT: zoo1:2181,zoo2:2181,zoo3:2181
+        ports:
+           - "9094:9092"
+        links:
+           - zoo1
+           - zoo2
+           - zoo3
+    kafka-manager:
+        image: sheepkiller/kafka-manager
+        restart: unless-stopped
+        environment:
+            ZK_HOSTS: zoo1:2181,zoo2:2181,zoo3:2181
+            KAFKA_BROKERS: kafka1:9092,kafka2:9092
+            APPLICATION_SECRET: letmein
+            KM_ARGS: -Djava.net.preferIPv4Stack=true
+        ports:
+           - "9090:9000"
+        links:
+           - zoo1
+           - zoo2
+           - zoo3
+           - kafka1
+           - kafka2
+    rabbitmq1:
+        image: rabbitmq:management
+        restart: unless-stopped
+        privileged: true
+        volumes:
+           - ./rabbitmq1:/var/rabbitmq/lib
+        environment:
+            RABBITMQ_DEFAULT_USER: root
+            RABBITMQ_DEFAULT_PASS: root
+        ports:
+           - "15672:15672"
+           - "5672:5672"
+        mem_limit: 1024m
+    rabbitmq2:
+        image: rabbitmq:management
+        restart: unless-stopped
+        privileged: true
+        volumes:
+           - ./rabbitmq2:/var/rabbitmq/lib
+        environment:
+            RABBITMQ_DEFAULT_USER: root
+            RABBITMQ_DEFAULT_PASS: root
+        ports:
+           - "15673:15672"
+           - "5673:5672"
+        mem_limit: 1024m
+    canal:
+        image: canal/canal-server:v1.1.1
+        environment:
+            canal.instance.master.address: mysql1:3306
+            canal.instance.dbUsername: canal
+            canal.instance.dbPassword: canal
+            canal.instance.connectionCharset: UTF-8
+            canal.instance.tsdb.enable: "true"
+            canal.instance.gtidon: "false"
+        ports:
+           - "11111:11111"
+        links:
+           - mysql1
+           - zoo1
+           - zoo2
+           - zoo3
+           - kafka1
+           - kafka2
+    rmqnamesrv:
+        image: foxiswho/rocketmq:server
+        restart: unless-stopped
+        hostname: rmqnamesrv
+        ports:
+           - 9876:9876
+        privileged: true
+        volumes:
+           - ./rmq/logs:/opt/logs
+           - ./rmq/store:/opt/store
+    rmqbroker1:
+        image: foxiswho/rocketmq:broker
+        restart: unless-stopped
+        hostname: rmqbroker1
+        ports:
+           - 11909:10909
+           - 11911:10911
+        privileged: true
+        volumes:
+           - ./rmq/logs1:/opt/logs
+           - ./rmq/store1:/opt/store
+           - ./rmq/brokerconf1/broker.conf:/etc/rocketmq/broker.conf
+        environment:
+            NAMESRV_ADDR: "rmqnamesrv:9876"
+            JAVA_OPTS: " -Duser.home=/opt"
+            JAVA_OPT_EXT: "-server -Xms128m -Xmx128m -Xmn128m"
+        command: mqbroker -c /etc/rocketmq/broker.conf
+    rmqbroker2:
+        image: foxiswho/rocketmq:broker
+        restart: unless-stopped
+        hostname: rmqbroker2
+        ports:
+           - 12909:10909
+           - 12911:10911
+        privileged: true
+        volumes:
+           - ./rmq/logs2:/opt/logs
+           - ./rmq/store2:/opt/store
+           - ./rmq/brokerconf2/broker.conf:/etc/rocketmq/broker.conf
+        environment:
+            NAMESRV_ADDR: "rmqnamesrv:9876"
+            JAVA_OPTS: " -Duser.home=/opt"
+            JAVA_OPT_EXT: "-server -Xms128m -Xmx128m -Xmn128m"
+        command: mqbroker -c /etc/rocketmq/broker.conf
+    rmqconsole:
+        image: styletang/rocketmq-console-ng
+        restart: unless-stopped
+        hostname: rmqconsole
+        ports:
+            - 8180:8080
+        environment:
+            JAVA_OPTS: "-Drocketmq.namesrv.addr=rmqnamesrv:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false"
+        links:
+           - rmqnamesrv
+    nexus:
+        image: sonatype/nexus3
+        restart: unless-stopped
+        hostname: nexus
+        ports:
+            - 8081:8081
+        mem_limit: 20m
+    gogs:
+        image: gogs/gogs
+        restart: unless-stopped
+        privileged: true
+        volumes:
+           - ./gogs:/data
+        ports:
+            - 3000:3000
+        mem_limit: 50m

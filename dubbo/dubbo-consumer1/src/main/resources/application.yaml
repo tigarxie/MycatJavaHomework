@@ -1,0 +1,13 @@
+server:
+  port: 9031
+dubbo:
+  application:
+    name: dubbo-consumer1
+  protocol:
+    name: dubbo
+    port: 20813
+  registry:
+    address: zookeeper://192.168.5.141:2181
+# 因为是消费者，不需要扫描，如果提供者则需要扫描路径或打自动扫描特性 @DubboComponentScan
+#  scan:
+#    base-packages:

@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: eureka-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: EUREKA-USER-SERVICE
+          uri: lb://EUREKA-USER-SERVICE
+          predicates:
+            - Path=/user/**
+          filters:
+            - StripPrefix=1
+        - id: EUREKA-SCHOOL-SERVICE
+          uri: lb://EUREKA-SCHOOL-SERVICE
+          predicates:
+            - Path=/school/**
+          filters:
+            - StripPrefix=1
+        - id: 163                     #网关路由到网易官网
+          uri: http://www.163.com/
+          predicates:
+            - Path=/163/**
+          filters:
+            - StripPrefix=1
+server:
+  port: 9030
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    service-url:
+      defaultZone: http://localhost:9021/eureka/,http://localhost:9022/eureka/
+
+logging:
+  level:
+    org.springframework.cloud.gateway: trace
+    org.springframework.http.server.reactive: debug
+    org.springframework.web.reactive: debug
+    reactor.ipc.netty: debug
+feign:
+  hystrix:
+    enabled: true
